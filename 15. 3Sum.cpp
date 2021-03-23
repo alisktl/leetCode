@@ -28,19 +28,16 @@ using namespace std;
 
 vector<vector<int>> threeSum(vector<int>& nums) {
     vector<vector<int>> result;
-    vector<int> nums_1;
     vector<int> nums_2;
 
     if(nums.size() < 3) return result;
 
     unordered_map<int, short> freq_map;
-    unordered_map<string, bool> cache;
 
     for(int i = 0; i < nums.size(); i++) {
         if(freq_map.find(nums[i]) != freq_map.end()) {
             int _freq = freq_map[nums[i]];
             if(_freq < 3) {
-                if(_freq == 1) nums_2.emplace_back(nums[i]);
 
                 ++freq_map[nums[i]];
             }
@@ -48,42 +45,40 @@ vector<vector<int>> threeSum(vector<int>& nums) {
             continue;
         }
 
-        nums_1.emplace_back(nums[i]);
+        nums_2.emplace_back(nums[i]);
         freq_map[nums[i]] = 1;
     }
 
-    sort(nums_1.begin(), nums_1.end());
     sort(nums_2.begin(), nums_2.end());
 
-    for(int i = 0; i < nums_1.size(); i++) {
-        for(int j = i+1; j < nums_1.size(); j++) {
-            int _add = -(nums_1[i] + nums_1[j]);
-            
-            if(_add < nums_1[j]) continue;
+    int left = 0, right = nums_2.size()-1;
 
-            if(freq_map.find(_add) != freq_map.end()) {
-                if(cache.find(to_string(nums_1[i]) + '.' + to_string(nums_1[j]) + '.' + to_string(_add)) == cache.end()) {
-                    if(nums_1[i] != _add && nums_1[j] != _add) {
-                        
-                        result.emplace_back(vector<int> {nums_1[i], nums_1[j], _add});
-                        cache[to_string(nums_1[i]) + '.' + to_string(nums_1[j]) + '.' + to_string(_add)] = true;
+    if(freq_map.find(0) != freq_map.end()) {
+        if(freq_map[0] >= 3) result.emplace_back(vector<int> {0, 0, 0});
+    }
+
+    while(left < right) {
+        if(nums_2[left] <= nums_2[right]) {
+            int _add = -(nums_2[left] + nums_2[right]);
+
+            if(nums_2[left] <= _add && _add <= nums_2[right]) {
+                if(freq_map.find(_add) != freq_map.end()) {
+                    int _freq = freq_map[_add];
+                    if((nums_2[left] != _add && _add != nums_2[right]) ||
+                        (nums_2[left] == _add && _add != nums_2[right] && _freq >= 2) ||
+                        (nums_2[left] != _add && _add == nums_2[right] && _freq >= 2)) {
+
+                        result.emplace_back(vector<int> {nums_2[left], _add, nums_2[right]});
                     }
                 }
             }
         }
-    }
 
-    for(int i = 0; i < nums_2.size(); i++) {
-        if(freq_map.find(-(nums_2[i] * 2)) != freq_map.end()) {
-            int _add = -(nums_2[i] * 2);
-            if(cache.find(to_string(nums_2[i]) + '.' + to_string(nums_2[i]) + '.' + to_string(_add)) == cache.end()) {
-                if((nums_2[i] != _add) ||
-                    (nums_2[i] == _add && freq_map[_add] >= 3)) {
-
-                    result.emplace_back(vector<int> {nums_2[i], nums_2[i], _add});
-                    cache[to_string(nums_2[i]) + '.' + to_string(nums_2[i]) + '.' + to_string(_add)] = true;
-                }
-            }
+        if(left >= right-1) {
+            ++left;
+            right = nums_2.size()-1;
+        } else {
+            --right;
         }
     }
 
